@@ -1,0 +1,33 @@
+body {
+    background-color: black;
+}
+
+h1 {
+    color: white;
+}
+
+#strength-text {
+    color: white;
+}
+
+.strength-line {
+    height: 5px;
+    border-radius: 4px;
+    transition: width 0.3s;
+}
+
+.line-strong {
+    background-color: green;
+}
+
+.line-weak {
+    background-color: red;
+}
+
+.results p, .results ul, .results ul li {
+    color: white;
+}
+
+.strength-meter .progress-bar {
+    transition: width 0.3s;
+}

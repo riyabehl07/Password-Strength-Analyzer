@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Strength Analyzer</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="bg-dark text-white">
+    <div class="container mt-5">
+        <h1 class="text-center">Password Strength Analyzer</h1>
+        <form method="POST" action="/analyze" class="mt-4">
+            <div class="form-group">
+                <input type="password" class="form-control" name="password" id="password" placeholder="Enter your password" oninput="updateStrengthMeter()">
+            </div>
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">Analyze</button>
+                <button type="button" class="btn btn-secondary" id="clear-button" onclick="clearPassword()">Clear</button>
+            </div>
+        </form>
+        <div class="strength-meter mt-4">
+            <div id="strength-bar" class="progress">
+                <div class="progress-bar" role="progressbar"></div>
+            </div>
+        </div>
+        <p id="strength-text" class="text-center mt-2"></p>
+        <div id="recommendations" class="mt-4"></div>
+        <div id="results-container">
+            {% if result %}
+                <div class="results mt-4">
+                    <p>{{ result }}</p>
+                    <ul>
+                        <li>Lowercase letters: {{ counts.lowercase }}</li>
+                        <li>Uppercase letters: {{ counts.uppercase }}</li>
+                        <li>Numeric characters: {{ counts.numeric }}</li>
+                        <li>Whitespace characters: {{ counts.whitespace }}</li>
+                        <li>Special characters: {{ counts.special }}</li>
+                    </ul>
+                </div>
+                <div class="strength-line mt-2 {% if counts.strength >= 5 %}line-strong{% else %}line-weak{% endif %}" style="width: {{ counts.strength | multiply(20) }}%;"></div>
+            {% endif %}
+        </div>
+    </div>
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        function clearPassword() {
+            document.getElementById('password').value = '';
+            document.getElementById('strength-text').innerText = '';
+            document.getElementById('strength-bar').children[0].style.width = '0%';
+            document.getElementById('strength-bar').children[0].className = 'progress-bar';
+            document.getElementById('results-container').innerHTML = '';
+            document.getElementById('recommendations').innerHTML = '';
+        }
+
+        function updateStrengthMeter() {
+            const password = document.getElementById('password').value;
+            const strengthBar = document.querySelector('.progress-bar');
+            const strengthText = document.getElementById('strength-text');
+            const recommendations = document.getElementById('recommendations');
+
+            let strength = 0;
+            let recommendationText = '<h4>Recommendations:</h4><ul>';
+
+            if (password.length > 5) strength += 1;
+            if (password.length > 8) strength += 1;
+            if (/[A-Z]/.test(password)) strength += 1;
+            if (/[0-9]/.test(password)) strength += 1;
+            if (/[\W]/.test(password)) strength += 1;
+
+            if (password.length < 8) {
+                recommendationText += '<li>Make your password at least 8 characters long.</li>';
+            }
+            if (!/[A-Z]/.test(password)) {
+                recommendationText += '<li>Include at least one uppercase letter.</li>';
+            }
+            if (!/[0-9]/.test(password)) {
+                recommendationText += '<li>Include at least one number.</li>';
+            }
+            if (!/[\W]/.test(password)) {
+                recommendationText += '<li>Include at least one special character (e.g., !@#$%^&*).</li>';
+            }
+            if (/\s/.test(password)) {
+                recommendationText += '<li>Avoid using spaces in your password.</li>';
+            }
+            recommendationText += '</ul>';
+
+            recommendations.innerHTML = recommendationText;
+
+            switch (strength) {
+                case 0:
+                    strengthBar.style.width = '0%';
+                    strengthText.textContent = '';
+                    strengthBar.className = 'progress-bar';
+                    break;
+                case 1:
+                    strengthBar.style.width = '20%';
+                    strengthText.textContent = 'Very Weak';
+                    strengthBar.className = 'progress-bar bg-danger';
+                    break;
+                case 2:
+                    strengthBar.style.width = '40%';
+                    strengthText.textContent = 'Weak';
+                    strengthBar.className = 'progress-bar bg-warning';
+                    break;
+                case 3:
+                    strengthBar.style.width = '60%';
+                    strengthText.textContent = 'Medium';
+                    strengthBar.className = 'progress-bar bg-info';
+                    break;
+                case 4:
+                    strengthBar.style.width = '80%';
+                    strengthText.textContent = 'Strong';
+                    strengthBar.className = 'progress-bar bg-success';
+                    break;
+                case 5:
+                    strengthBar.style.width = '100%';
+                    strengthText.textContent = 'Very Strong';
+                    strengthBar.className = 'progress-bar bg-success';
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>
